@@ -4,6 +4,7 @@ import br.com.stockbay.userstockbay.domain.user.Auth;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -13,7 +14,7 @@ import java.time.ZoneOffset;
 
 @Service
 public class TokenConfigurations {
-    @Value("${")
+    @Value("${JWT_SECRET:my-secret-key}")
     private String secret;
 
     public String generateToken(Auth user) {
@@ -21,7 +22,7 @@ public class TokenConfigurations {
             Algorithm algorithm = Algorithm.HMAC256(secret);
             String token = JWT.create()
                     .withIssuer("RestAPi-Stockbay")
-                    .withSubject(user.getLogin())
+                    .withSubject(user.getUsername())
                     .withExpiresAt(genExpiresData())
                     .sign(algorithm);
             return token;
@@ -36,7 +37,7 @@ public class TokenConfigurations {
             Algorithm algorithm =   Algorithm.HMAC256(secret);
             return JWT.require(algorithm) .withIssuer("RestAPi-Stockbay").build().verify(token).getSubject();
 
-        }catch (JWTCreationException exception ){
+        }catch (JWTVerificationException exception ){
             return  "";
         }
     }
